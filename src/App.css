@@ -29,10 +29,16 @@
   font-size: 13px;
 }
 
-.add-stack {
+.head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-stack,
+.theme-toggle {
   font: inherit;
   font-size: 14px;
-  padding: 8px 14px;
   background: var(--surface);
   color: var(--text-h);
   border: 1px solid var(--border);
@@ -41,7 +47,26 @@
   transition: border-color 120ms, background 120ms;
 }
 
-.add-stack:hover {
+.add-stack {
+  padding: 8px 14px;
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.theme-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.add-stack:hover,
+.theme-toggle:hover {
   border-color: var(--accent-border);
   background: var(--accent-bg);
 }
@@ -78,13 +103,11 @@
   transition: border-color 140ms, box-shadow 140ms, transform 140ms;
 }
 
-@media (prefers-color-scheme: dark) {
-  .stack-card {
-    --stack-tint: hsl(var(--stack-hue) 25% 22%);
-    --stack-tint-strong: hsl(var(--stack-hue) 45% 30%);
-    --stack-border: hsl(var(--stack-hue) 30% 45%);
-    --stack-text: hsl(var(--stack-hue) 70% 78%);
-  }
+:root[data-theme='dark'] .stack-card {
+  --stack-tint: hsl(var(--stack-hue) 25% 22%);
+  --stack-tint-strong: hsl(var(--stack-hue) 45% 30%);
+  --stack-border: hsl(var(--stack-hue) 30% 45%);
+  --stack-text: hsl(var(--stack-hue) 70% 78%);
 }
 
 .stack-card:hover {

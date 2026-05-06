@@ -6,6 +6,23 @@ import './App.css'
 const isMac = typeof navigator !== 'undefined' && /Mac/i.test(navigator.platform)
 const modKey = isMac ? '⌘' : 'Ctrl'
 
+const initialTheme = () =>
+  (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) ||
+  'light'
+
+const SunIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+  </svg>
+)
+
+const MoonIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+)
+
 const randomHue = () => Math.floor(Math.random() * 360)
 const newStack = (name) => ({
   id: crypto.randomUUID(),
@@ -17,12 +34,19 @@ const newStack = (name) => ({
 export default function App() {
   const [stacks, setStacks] = useLocalStorage('todostack/v2/stacks', [])
   const [focusedId, setFocusedId] = useLocalStorage('todostack/v2/focused', null)
+  const [theme, setTheme] = useLocalStorage('todostack/v2/theme', initialTheme())
   const [input, setInput] = useState('')
   const inputRef = useRef(null)
 
   useEffect(() => {
     if (stacks.length === 0) setStacks([newStack('todo')])
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
 
   const focused = stacks.find((s) => s.id === focusedId) || stacks[0]
 
@@ -126,9 +150,19 @@ export default function App() {
             {totalTasks === 1 ? '' : 's'}
           </p>
         </div>
-        <button className="add-stack" onClick={addStack} title="new stack">
-          + new stack
-        </button>
+        <div className="head-actions">
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            title={`switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-label={`switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <button className="add-stack" onClick={addStack} title="new stack">
+            + new stack
+          </button>
+        </div>
       </header>
 
       <section className="grid">

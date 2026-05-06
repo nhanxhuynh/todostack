@@ -5,6 +5,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>todostack</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('todostack/v2/theme');
+          var parsed = stored ? JSON.parse(stored) : null;
+          var theme = parsed === 'dark' || parsed === 'light'
+            ? parsed
+            : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
