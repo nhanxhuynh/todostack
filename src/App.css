@@ -285,6 +285,44 @@
 .composer {
   display: flex;
   gap: 8px;
+  align-items: stretch;
+}
+
+.undo-btn {
+  flex: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  background: var(--surface);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms, opacity 120ms;
+}
+
+.undo-btn:not(:disabled):hover {
+  border-color: var(--stack-color);
+  background: var(--accent-bg);
+}
+
+.undo-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.undo-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.undo-count {
+  margin-left: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
 }
 
 .composer input {

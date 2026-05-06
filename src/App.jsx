@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useLocalStorage } from './useLocalStorage'
+import { useLocalStorage, useSessionStorage } from './useLocalStorage'
 import './App.css'
 
 const isMac = typeof navigator !== 'undefined' && /Mac/i.test(navigator.platform)
@@ -23,6 +23,13 @@ const MoonIcon = () => (
   </svg>
 )
 
+const UndoIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 14 4 9l5-5" />
+    <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
+  </svg>
+)
+
 const randomHue = () => Math.floor(Math.random() * 360)
 const newStack = (name) => ({
   id: crypto.randomUUID(),
@@ -35,8 +42,12 @@ export default function App() {
   const [stacks, setStacks] = useLocalStorage('todostack/v2/stacks', [])
   const [focusedId, setFocusedId] = useLocalStorage('todostack/v2/focused', null)
   const [theme, setTheme] = useLocalStorage('todostack/v2/theme', initialTheme())
+  const [undoLog, setUndoLog] = useSessionStorage('todostack/v2/undo', [])
   const [input, setInput] = useState('')
   const inputRef = useRef(null)
+
+  const recordUndo = (action) =>
+    setUndoLog((prev) => [...prev, action].slice(-50))
 
   useEffect(() => {
     if (stacks.length === 0) setStacks([newStack('todo')])
@@ -74,17 +85,41 @@ export default function App() {
   const popTop = (stackId) => {
     const id = stackId ?? focused?.id
     if (!id) return
+    const stack = stacks.find((s) => s.id === id)
+    if (!stack || stack.tasks.length === 0) return
+    recordUndo({ type: 'pop', stackId: id, task: stack.tasks[0], index: 0 })
     setStacks((prev) =>
       prev.map((s) => (s.id === id ? { ...s, tasks: s.tasks.slice(1) } : s)),
     )
   }
 
-  const popCard = (stackId, taskId) =>
+  const popCard = (stackId, taskId) => {
+    const stack = stacks.find((s) => s.id === stackId)
+    if (!stack) return
+    const idx = stack.tasks.findIndex((t) => t.id === taskId)
+    if (idx === -1) return
+    recordUndo({ type: 'pop', stackId, task: stack.tasks[idx], index: idx })
     setStacks((prev) =>
       prev.map((s) =>
         s.id === stackId ? { ...s, tasks: s.tasks.filter((t) => t.id !== taskId) } : s,
       ),
     )
+  }
+
+  const undo = () => {
+    if (undoLog.length === 0) return
+    const action = undoLog[undoLog.length - 1]
+    setUndoLog((prev) => prev.slice(0, -1))
+    if (action.type === 'pop') {
+      setStacks((prev) =>
+        prev.map((s) => {
+          if (s.id !== action.stackId) return s
+          const i = Math.min(action.index, s.tasks.length)
+          return { ...s, tasks: [...s.tasks.slice(0, i), action.task, ...s.tasks.slice(i)] }
+        }),
+      )
+    }
+  }
 
   const addStack = () => {
     const s = newStack(`stack ${stacks.length + 1}`)
@@ -132,11 +167,15 @@ export default function App() {
       } else if (meta && e.key === '/') {
         e.preventDefault()
         inputRef.current?.focus()
+      } else if (meta && !e.shiftKey && (e.key === 'z' || e.key === 'Z')) {
+        if (e.target === inputRef.current && input.length > 0) return
+        e.preventDefault()
+        undo()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [input, stacks, focused]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [input, stacks, focused, undoLog]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalTasks = stacks.reduce((acc, s) => acc + s.tasks.length, 0)
 
@@ -182,6 +221,21 @@ export default function App() {
 
       <div className="dock" style={{ '--stack-hue': focused?.hue ?? 280 }}>
         <form className="composer" onSubmit={push}>
+          <button
+            type="button"
+            className="undo-btn"
+            onClick={undo}
+            disabled={undoLog.length === 0}
+            title={
+              undoLog.length === 0
+                ? 'nothing to undo'
+                : `undo last pop (${undoLog.length})`
+            }
+            aria-label="undo last pop"
+          >
+            <UndoIcon />
+            {undoLog.length > 0 && <span className="undo-count">{undoLog.length}</span>}
+          </button>
           <input
             ref={inputRef}
             autoFocus
@@ -198,6 +252,7 @@ export default function App() {
         <ul className="shortcuts" aria-label="keyboard shortcuts">
           <li><kbd>Enter</kbd> push</li>
           <li><kbd>{modKey}</kbd>+<kbd>⌫</kbd> pop top</li>
+          <li><kbd>{modKey}</kbd>+<kbd>Z</kbd> undo</li>
           <li><kbd>{modKey}</kbd>+<kbd>[</kbd>/<kbd>]</kbd> switch</li>
           <li><kbd>{modKey}</kbd>+<kbd>1</kbd>–<kbd>9</kbd> jump</li>
           <li><kbd>Esc</kbd> clear</li>

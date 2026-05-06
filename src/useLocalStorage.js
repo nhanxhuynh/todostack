@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 
-export function useLocalStorage(key, initialValue) {
+function useStorage(storage, key, initialValue) {
   const [value, setValue] = useState(() => {
     try {
-      const raw = localStorage.getItem(key)
+      const raw = storage.getItem(key)
       return raw ? JSON.parse(raw) : initialValue
     } catch {
       return initialValue
@@ -11,8 +11,16 @@ export function useLocalStorage(key, initialValue) {
   })
 
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value))
-  }, [key, value])
+    storage.setItem(key, JSON.stringify(value))
+  }, [storage, key, value])
 
   return [value, setValue]
+}
+
+export function useLocalStorage(key, initialValue) {
+  return useStorage(localStorage, key, initialValue)
+}
+
+export function useSessionStorage(key, initialValue) {
+  return useStorage(sessionStorage, key, initialValue)
 }
