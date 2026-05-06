@@ -5,6 +5,7 @@ import './App.css'
 
 const isMac = typeof navigator !== 'undefined' && /Mac/i.test(navigator.platform)
 const modKey = isMac ? '⌘' : 'Ctrl'
+const shiftKey = isMac ? '⇧' : 'Shift'
 
 const initialTheme = () =>
   (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme')) ||
@@ -146,7 +147,13 @@ export default function App() {
         e.target.tagName === 'INPUT' && e.target !== inputRef.current
       if (inOtherInput) return
       const meta = e.metaKey || e.ctrlKey
-      if (meta && e.key === 'Backspace') {
+      if (meta && e.shiftKey && e.key === 'Backspace') {
+        e.preventDefault()
+        if (focused) deleteStack(focused.id)
+      } else if (meta && e.shiftKey && e.key === 'Enter') {
+        e.preventDefault()
+        addStack()
+      } else if (meta && e.key === 'Backspace') {
         e.preventDefault()
         popTop()
       } else if (meta && e.key === ']') {
@@ -200,6 +207,9 @@ export default function App() {
           </button>
           <button className="add-stack" onClick={addStack} title="new stack">
             + new stack
+            <span className="kbd-hint">
+              <kbd>{modKey}</kbd><kbd>{shiftKey}</kbd><kbd>↵</kbd>
+            </span>
           </button>
         </div>
       </header>
@@ -229,11 +239,14 @@ export default function App() {
             title={
               undoLog.length === 0
                 ? 'nothing to undo'
-                : `undo last pop (${undoLog.length})`
+                : `undo last pop (${undoLog.length} available)`
             }
             aria-label="undo last pop"
           >
             <UndoIcon />
+            <span className="kbd-hint">
+              <kbd>{modKey}</kbd><kbd>Z</kbd>
+            </span>
             {undoLog.length > 0 && <span className="undo-count">{undoLog.length}</span>}
           </button>
           <input
@@ -244,17 +257,19 @@ export default function App() {
             placeholder={focused ? `push to "${focused.name}"…` : 'push…'}
             aria-label="new task"
           />
-          <button type="submit" disabled={!input.trim()}>
+          <button type="submit" disabled={!input.trim()} title="push">
             push
+            <span className="kbd-hint">
+              <kbd>↵</kbd>
+            </span>
           </button>
         </form>
 
         <ul className="shortcuts" aria-label="keyboard shortcuts">
-          <li><kbd>Enter</kbd> push</li>
           <li><kbd>{modKey}</kbd>+<kbd>⌫</kbd> pop top</li>
-          <li><kbd>{modKey}</kbd>+<kbd>Z</kbd> undo</li>
           <li><kbd>{modKey}</kbd>+<kbd>[</kbd>/<kbd>]</kbd> switch</li>
           <li><kbd>{modKey}</kbd>+<kbd>1</kbd>–<kbd>9</kbd> jump</li>
+          <li><kbd>{modKey}</kbd>+<kbd>{shiftKey}</kbd>+<kbd>⌫</kbd> delete stack</li>
           <li><kbd>Esc</kbd> clear</li>
           <li><kbd>{modKey}</kbd>+<kbd>/</kbd> focus</li>
         </ul>
@@ -312,7 +327,11 @@ function StackCard({ stack, index, focused, onFocus, onRename, onDelete, onPopCa
               if (focused) setEditing(true)
               else onFocus()
             }}
-            title={focused ? 'click to rename' : 'click to focus'}
+            title={
+              focused
+                ? 'click to rename'
+                : `click to focus${index < 9 ? ` · ${modKey}+${index + 1}` : ''}`
+            }
           >
             <span className="dot" />
             <span className="label">{stack.name}</span>
@@ -328,7 +347,7 @@ function StackCard({ stack, index, focused, onFocus, onRename, onDelete, onPopCa
               e.stopPropagation()
               onDelete()
             }}
-            title="delete stack"
+            title={focused ? `delete stack · ${modKey}+${shiftKey}+⌫` : 'delete stack'}
             aria-label="delete stack"
           >
             ×
@@ -361,7 +380,7 @@ function StackCard({ stack, index, focused, onFocus, onRename, onDelete, onPopCa
               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               whileHover={{ scale: 1.01 - Math.min(i, 6) * 0.018 }}
               whileTap={{ scale: 0.96 }}
-              title="click to pop"
+              title={i === 0 ? `click to pop · ${modKey}+⌫` : 'click to pop'}
             >
               <span className="text">{task.text}</span>
             </motion.button>
