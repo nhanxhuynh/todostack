@@ -231,7 +231,7 @@
 
 .stack-body {
   position: relative;
-  min-height: 56px;
+  min-height: max(80px, calc(38px + var(--task-count, 0) * 6px));
   padding-top: 2px;
 }
 
@@ -257,6 +257,10 @@
 .card[data-top='true'] {
   background: var(--stack-tint-strong);
   border-color: var(--stack-color);
+}
+
+.card:not([data-top='true']) .text {
+  visibility: hidden;
 }
 
 .card .text {

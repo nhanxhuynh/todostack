@@ -355,7 +355,10 @@ function StackCard({ stack, index, focused, onFocus, onRename, onDelete, onPopCa
         </div>
       </div>
 
-      <div className="stack-body">
+      <div
+        className="stack-body"
+        style={{ '--task-count': stack.tasks.length }}
+      >
         <AnimatePresence initial={false}>
           {stack.tasks.map((task, i) => (
             <motion.button
