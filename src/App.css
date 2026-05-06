@@ -54,10 +54,10 @@
   align-content: start;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .app { padding: 20px 14px 14px; gap: 14px; }
   .head h1 { font-size: 28px; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .grid { grid-template-columns: 1fr; gap: 10px; }
 }
 
 .stack-card {
