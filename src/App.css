@@ -1,11 +1,13 @@
 .app {
   max-width: 560px;
   margin: 0 auto;
-  padding: 64px 24px 96px;
+  min-height: 100svh;
+  padding: 48px 24px 32px;
   display: flex;
   flex-direction: column;
   gap: 28px;
   text-align: left;
+  box-sizing: border-box;
 }
 
 header h1 {
@@ -14,10 +16,81 @@ header h1 {
   letter-spacing: -1.2px;
 }
 
-.hint {
+.tagline {
   margin-top: 6px;
   color: var(--text);
   font-size: 14px;
+}
+
+.stack {
+  position: relative;
+  flex: 1;
+  min-height: 220px;
+  padding-top: 4px;
+}
+
+.card {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 16px;
+  color: var(--text-h);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: -54px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transform-origin: center top;
+}
+
+.card[data-top='true'] {
+  border-color: var(--accent-border);
+  background: var(--surface-accent);
+}
+
+.card .text {
+  display: block;
+  word-break: break-word;
+}
+
+.card .badge {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.empty {
+  text-align: center;
+  color: var(--text);
+  font-size: 14px;
+  padding: 40px 0;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+
+.dock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  bottom: 0;
+  padding-top: 16px;
+  background: linear-gradient(to bottom, transparent, var(--bg) 24px);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text);
 }
 
 .composer {
@@ -30,7 +103,7 @@ header h1 {
   padding: 14px 16px;
   font: inherit;
   font-size: 16px;
-  background: var(--code-bg);
+  background: var(--surface);
   color: var(--text-h);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -65,68 +138,6 @@ header h1 {
   transform: scale(0.97);
 }
 
-.stack {
-  position: relative;
-  min-height: 220px;
-  padding-top: 4px;
-}
-
-.card {
-  position: relative;
-  display: block;
-  width: 100%;
-  text-align: left;
-  font: inherit;
-  font-size: 16px;
-  color: var(--text-h);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 18px 20px;
-  margin-bottom: -54px;
-  cursor: pointer;
-  box-shadow: var(--shadow);
-  transform-origin: center top;
-}
-
-.card[data-top='true'] {
-  border-color: var(--accent-border);
-  background: var(--accent-bg);
-}
-
-.card .text {
-  display: block;
-  word-break: break-word;
-}
-
-.card .badge {
-  display: block;
-  margin-top: 6px;
-  font-size: 11px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.empty {
-  text-align: center;
-  color: var(--text);
-  font-size: 14px;
-  padding: 40px 0;
-  border: 1px dashed var(--border);
-  border-radius: 12px;
-}
-
-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: var(--text);
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}
-
 .link {
   background: none;
   border: none;
@@ -140,4 +151,37 @@ footer {
 
 .link:hover {
   background: var(--accent-bg);
+}
+
+.shortcuts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.shortcuts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  padding: 1px 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-h);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  line-height: 1;
 }
