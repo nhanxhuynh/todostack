@@ -31,6 +31,34 @@ const UndoIcon = () => (
   </svg>
 )
 
+const ExportIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+)
+
+const ImportIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+)
+
+const isValidExport = (data) =>
+  Array.isArray(data) &&
+  data.every(
+    (s) =>
+      s &&
+      typeof s.id === 'string' &&
+      typeof s.name === 'string' &&
+      typeof s.hue === 'number' &&
+      Array.isArray(s.tasks) &&
+      s.tasks.every((t) => t && typeof t.id === 'string' && typeof t.text === 'string'),
+  )
+
 const randomHue = () => Math.floor(Math.random() * 360)
 const newStack = (name) => ({
   id: crypto.randomUUID(),
@@ -45,7 +73,54 @@ export default function App() {
   const [theme, setTheme] = useLocalStorage('todostack/v2/theme', initialTheme())
   const [undoLog, setUndoLog] = useSessionStorage('todostack/v2/undo', [])
   const [input, setInput] = useState('')
+  const [status, setStatus] = useState(null)
   const inputRef = useRef(null)
+  const statusTimer = useRef(null)
+
+  const showStatus = (msg) => {
+    setStatus(msg)
+    clearTimeout(statusTimer.current)
+    statusTimer.current = setTimeout(() => setStatus(null), 2500)
+  }
+
+  const exportToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(stacks, null, 2))
+      const total = stacks.reduce((a, s) => a + s.tasks.length, 0)
+      showStatus(`copied ${stacks.length} stack${stacks.length === 1 ? '' : 's'} · ${total} task${total === 1 ? '' : 's'}`)
+    } catch {
+      showStatus('export failed — clipboard blocked')
+    }
+  }
+
+  const importFromClipboard = async () => {
+    let text
+    try {
+      text = await navigator.clipboard.readText()
+    } catch {
+      showStatus('clipboard read blocked — paste permission required')
+      return
+    }
+    let data
+    try {
+      data = JSON.parse(text)
+    } catch {
+      showStatus('clipboard does not contain JSON')
+      return
+    }
+    if (!isValidExport(data)) {
+      showStatus('clipboard JSON is not a Todostack export')
+      return
+    }
+    const hasContent = stacks.some((s) => s.tasks.length > 0) || stacks.length > 1
+    if (hasContent && !window.confirm(`Replace your current ${stacks.length} stacks with the imported ${data.length}?`)) {
+      return
+    }
+    setStacks(data)
+    setFocusedId(data[0]?.id ?? null)
+    setUndoLog([])
+    showStatus(`imported ${data.length} stack${data.length === 1 ? '' : 's'}`)
+  }
 
   const recordUndo = (action) =>
     setUndoLog((prev) => [...prev, action].slice(-50))
@@ -205,6 +280,22 @@ export default function App() {
           >
             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </button>
+          <button
+            className="theme-toggle"
+            onClick={exportToClipboard}
+            title="export all stacks to clipboard as JSON"
+            aria-label="export to clipboard"
+          >
+            <ExportIcon />
+          </button>
+          <button
+            className="theme-toggle"
+            onClick={importFromClipboard}
+            title="import stacks from clipboard JSON (replaces current)"
+            aria-label="import from clipboard"
+          >
+            <ImportIcon />
+          </button>
           <button className="add-stack" onClick={addStack} title="new stack">
             + new stack
             <span className="kbd-hint">
@@ -230,6 +321,7 @@ export default function App() {
       </section>
 
       <div className="dock" style={{ '--stack-hue': focused?.hue ?? 280 }}>
+        {status && <div className="toast" role="status">{status}</div>}
         <form className="composer" onSubmit={push}>
           <button
             type="button"
