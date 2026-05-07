@@ -147,13 +147,13 @@ export default function App() {
         e.target.tagName === 'INPUT' && e.target !== inputRef.current
       if (inOtherInput) return
       const meta = e.metaKey || e.ctrlKey
-      if (meta && e.shiftKey && e.key === 'Backspace') {
+      if (meta && e.shiftKey && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault()
         if (focused) deleteStack(focused.id)
       } else if (meta && e.shiftKey && e.key === 'Enter') {
         e.preventDefault()
         addStack()
-      } else if (meta && e.key === 'Backspace') {
+      } else if (meta && !e.shiftKey && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault()
         popTop()
       } else if (meta && e.key === ']') {
@@ -266,10 +266,10 @@ export default function App() {
         </form>
 
         <ul className="shortcuts" aria-label="keyboard shortcuts">
-          <li><kbd>{modKey}</kbd>+<kbd>⌫</kbd> pop top</li>
+          <li><kbd>{modKey}</kbd>+<kbd>K</kbd> pop top</li>
           <li><kbd>{modKey}</kbd>+<kbd>[</kbd>/<kbd>]</kbd> switch</li>
           <li><kbd>{modKey}</kbd>+<kbd>1</kbd>–<kbd>9</kbd> jump</li>
-          <li><kbd>{modKey}</kbd>+<kbd>{shiftKey}</kbd>+<kbd>⌫</kbd> delete stack</li>
+          <li><kbd>{modKey}</kbd>+<kbd>{shiftKey}</kbd>+<kbd>K</kbd> delete stack</li>
           <li><kbd>Esc</kbd> clear</li>
           <li><kbd>{modKey}</kbd>+<kbd>/</kbd> focus</li>
         </ul>
@@ -347,7 +347,7 @@ function StackCard({ stack, index, focused, onFocus, onRename, onDelete, onPopCa
               e.stopPropagation()
               onDelete()
             }}
-            title={focused ? `delete stack · ${modKey}+${shiftKey}+⌫` : 'delete stack'}
+            title={focused ? `delete stack · ${modKey}+${shiftKey}+K` : 'delete stack'}
             aria-label="delete stack"
           >
             ×
@@ -383,7 +383,7 @@ function StackCard({ stack, index, focused, onFocus, onRename, onDelete, onPopCa
               transition={{ type: 'spring', stiffness: 380, damping: 30 }}
               whileHover={{ scale: 1.01 - Math.min(i, 6) * 0.018 }}
               whileTap={{ scale: 0.96 }}
-              title={i === 0 ? `click to pop · ${modKey}+⌫` : 'click to pop'}
+              title={i === 0 ? `click to pop · ${modKey}+K` : 'click to pop'}
             >
               <span className="text">{task.text}</span>
             </motion.button>
