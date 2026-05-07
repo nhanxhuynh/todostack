@@ -49,6 +49,12 @@
   color-scheme: dark;
 }
 
+html,
+body {
+  min-width: 320px;
+  min-height: 480px;
+}
+
 body {
   margin: 0;
 }
